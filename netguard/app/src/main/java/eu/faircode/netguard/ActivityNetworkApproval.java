@@ -252,7 +252,7 @@ public class ActivityNetworkApproval extends ComponentActivity {
             dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         apps.setOnItemClickListener((list, view, position, id) -> {
             dialog.dismiss();
-            chooseMode(matches.get(position));
+            showPackage(matches.get(position).packageName);
         });
         dialog.show();
     }

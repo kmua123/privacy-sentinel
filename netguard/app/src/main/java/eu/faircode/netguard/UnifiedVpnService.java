@@ -57,6 +57,7 @@ public final class UnifiedVpnService extends VpnService {
     static volatile String homeError = "";
     private static volatile UnifiedVpnService liveService;
     private static volatile String physicalNetworkSummary = "联网守卫未运行";
+    private static volatile String vpnAddressSummary = "VPN 地址尚未建立";
     private static volatile String socketBindingFailure = "";
     private static volatile String networkMonitoringWarning = "";
     private static volatile boolean networkRecoveryPending;
@@ -74,6 +75,8 @@ public final class UnifiedVpnService extends VpnService {
     private boolean physicalCallbackRegistered;
     private boolean defaultCallbackRegistered;
     private volatile ParcelFileDescriptor tunnel;
+    // Read/written only by the serialized core worker alongside tunnel.
+    private boolean tunnelIpv6;
     private boolean receiverRegistered;
     private boolean initialStartQueued;
     private volatile boolean stopping;
@@ -146,6 +149,7 @@ public final class UnifiedVpnService extends VpnService {
         networkRecoveryPending = false;
         socketBindingFailure = "";
         networkMonitoringWarning = "";
+        vpnAddressSummary = "VPN 地址尚未建立";
         connectivity = getSystemService(ConnectivityManager.class);
         physicalNetwork = readPhysicalDefault();
         physicalNetworkSummary = physicalNetwork.summary;
@@ -160,6 +164,7 @@ public final class UnifiedVpnService extends VpnService {
 
     public static String networkDiagnostics() {
         StringBuilder result = new StringBuilder(physicalNetworkSummary);
+        result.append('\n').append(vpnAddressSummary);
         if (networkRecoveryPending)
             result.append("\n正在根据底层网络变化恢复连接，VPN 继续接管流量。");
         if (lastNetworkRecoveryAt > 0)
@@ -366,17 +371,39 @@ public final class UnifiedVpnService extends VpnService {
         error = "";
         homeError = "";
         try {
-            String config = new NetworkConfig(this).buildCoreYaml(selectedNetwork.ipv6Ready);
-            if (tunnel == null) {
+            NetworkConfig.PreparedCore prepared = new NetworkConfig(this).prepareCore(selectedNetwork.ipv6Ready);
+            if (tunnel == null || tunnelIpv6 != prepared.ipv6Enabled) {
+                if (!isCurrent() || !wanted)
+                    return;
+                if (tunnel != null) {
+                    running = false;
+                    Guardcore.stop();
+                }
                 Builder builder = new Builder().setSession("隐私哨兵 · 审批／代理／回家")
                         .addAddress("10.99.0.1", 30)
-                        .addAddress("fd99:7072:6976::1", 126)
                         .addRoute("0.0.0.0", 0).addRoute("::", 0)
                         .addDnsServer("10.99.0.2").setMtu(1400)
                         .addDisallowedApplication(getPackageName());
+                // An IPv6 route still captures/blocks that family. Publishing a
+                // usable-looking ULA address on an IPv4-only uplink misleads
+                // applications using HTTPDNS/HTTPS hints outside normal AAAA.
+                if (prepared.ipv6Enabled)
+                    builder.addAddress("fd99:7072:6976::1", 126);
                 if (Build.VERSION.SDK_INT >= 29)
                     builder.setMetered(false);
-                tunnel = builder.establish();
+                ParcelFileDescriptor replacement = builder.establish();
+                if (replacement == null)
+                    throw new IllegalStateException("VPN 授权已撤销");
+                // establish deactivates the old interface only after success.
+                // Never close the existing descriptor before its replacement.
+                ParcelFileDescriptor previous = tunnel;
+                tunnel = replacement;
+                tunnelIpv6 = prepared.ipv6Enabled;
+                vpnAddressSummary = "VPN IPv6 地址：" + (tunnelIpv6 ? "已发布" : "未发布（仍接管 IPv6 路由）");
+                if (previous != null) {
+                    try { previous.close(); }
+                    catch (Exception ignored) { /* old interface is already inactive */ }
+                }
             }
             if (tunnel == null)
                 throw new IllegalStateException("VPN 授权已撤销");
@@ -398,7 +425,7 @@ public final class UnifiedVpnService extends VpnService {
             if (!state.isDirectory() && !state.mkdirs())
                 throw new IllegalStateException("无法创建本地网络状态目录");
             new NetworkConfig(this).prepareRuleAssets(state);
-            Guardcore.start(tunnel.getFd(), config, state.getAbsolutePath(), callbacks);
+            Guardcore.start(tunnel.getFd(), prepared.yaml, state.getAbsolutePath(), callbacks);
             if (!isCurrent() || !wanted) {
                 stopCore();
                 return;
@@ -557,6 +584,8 @@ public final class UnifiedVpnService extends VpnService {
             }
             tunnel = null;
         }
+        if (liveService == null || liveService == this)
+            vpnAddressSummary = "VPN 地址尚未建立";
     }
 
     @Override public void onRevoke() {

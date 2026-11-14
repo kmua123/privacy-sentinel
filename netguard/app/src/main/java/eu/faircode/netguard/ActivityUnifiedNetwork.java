@@ -143,6 +143,7 @@ public final class ActivityUnifiedNetwork extends AppCompatActivity {
                         getString(R.string.unified_ipv6_on)}));
         page.addView(ipv6Mode);
         note(R.string.unified_ipv6_description);
+        button(R.string.unified_connection_diagnostics, this::showConnectionDiagnostics);
         section(R.string.unified_home_title);
         zeroTier = new CheckBox(this);
         zeroTier.setText(R.string.unified_zerotier_enabled);
@@ -323,6 +324,70 @@ public final class ActivityUnifiedNetwork extends AppCompatActivity {
                 ? "TCP 兼容模式" : "自动（优先直连，必要时尝试 TCP）");
         text.append("\n\n网络下发路由：\n").append(join(state.optJSONArray("managedRoutes")));
         text.append("\n\n上述状态不等于家庭网页已可访问。当前内核不提供 TCP 中继是否已连接的状态，请通过家庭网页或文件确认。此版本不模拟远端 Ping 应答，暂不提供经回家通道的 ICMP Ping。页面不包含身份私钥或订阅令牌。");
+        return text.toString();
+    }
+
+    private void showConnectionDiagnostics() {
+        runWork(() -> diagnostics = UnifiedVpnService.networkDiagnostics() + "\n\n"
+                + describeConnections(Guardcore.networkDiagnostics()), () -> {
+            TextView report = new TextView(this);
+            report.setPadding(dp(18), dp(12), dp(18), dp(12));
+            report.setTextIsSelectable(true);
+            report.setText(diagnostics);
+            ScrollView details = new ScrollView(this);
+            details.addView(report);
+            new AlertDialog.Builder(this).setTitle(R.string.unified_connection_diagnostics)
+                    .setView(details).setPositiveButton(android.R.string.ok, null).show();
+        });
+    }
+
+    private static String describeConnections(String json) throws Exception {
+        JSONObject data = new JSONObject(json);
+        if (data.optLong("session") == 0)
+            return "尚未采样，请启动守卫并复现问题后再查看。";
+        StringBuilder text = new StringBuilder(data.optBoolean("running")
+                ? "当前运行轮次" : "守卫已停止，保留最近一轮");
+        text.append(" · ").append(android.text.format.DateFormat.format("MM-dd HH:mm:ss", data.optLong("session")));
+        text.append("\n归属查询：").append(data.optLong("uidLookups"));
+        text.append("；无法识别：").append(data.optLong("unknownUid"));
+        text.append("\nTCP 入站检查：放行 ").append(data.optLong("allowedTcp"))
+                .append(" / 拒绝 ").append(data.optLong("deniedTcp"));
+        text.append("\nUDP 入站检查：放行 ").append(data.optLong("allowedUdp"))
+                .append(" / 拒绝 ").append(data.optLong("deniedUdp"));
+        text.append("\n出口保护／绑定失败：").append(data.optLong("protectFailures"));
+        JSONObject logs = data.optJSONObject("logCategories");
+        if (logs != null) {
+            text.append("\n\n错误日志线索（可能重叠／丢弃）");
+            String[] keys = {"tcp", "udp", "dns", "timeout", "unreachable", "refused", "tls", "other"};
+            String[] labels = {"TCP", "UDP", "DNS", "超时", "路由／地址不可达", "连接被拒绝", "TLS", "其他"};
+            for (int i = 0; i < keys.length; i++)
+                text.append('\n').append(labels[i]).append("：").append(logs.optLong(keys[i]));
+        }
+        text.append("\nDNS 调试失败线索：").append(data.optLong("dnsLogFailures"));
+        JSONObject queryTypes = data.optJSONObject("dnsQueryTypes");
+        if (queryTypes != null)
+            text.append("\nDNS 类型日志：A ").append(queryTypes.optLong("a"))
+                    .append(" / AAAA ").append(queryTypes.optLong("aaaa"))
+                    .append(" / HTTPS ").append(queryTypes.optLong("https"))
+                    .append(" / SVCB ").append(queryTypes.optLong("svcb"));
+        text.append("\n\n归属回调：").append(data.optLong("resolveUidCalls"))
+                .append(" 次，最长 ").append(data.optLong("resolveUidMaxMs"))
+                .append("ms，慢调用 ").append(data.optLong("resolveUidSlowCalls"));
+        text.append("\n审批回调：").append(data.optLong("permitCalls"))
+                .append(" 次，最长 ").append(data.optLong("permitMaxMs"))
+                .append("ms，慢调用 ").append(data.optLong("permitSlowCalls"));
+        text.append("\n慢调用阈值：").append(data.optLong("slowCallbackThresholdMs", 50)).append("ms");
+        JSONArray samples = data.optJSONArray("unknownUidSamples");
+        if (samples != null && samples.length() > 0) {
+            text.append("\n\n无法识别归属的目标样例（本机，最多 24 项）");
+            for (int i = 0; i < samples.length(); i++) {
+                JSONObject item = samples.getJSONObject(i);
+                text.append('\n').append(item.optInt("protocol") == 6 ? "TCP " : "UDP ")
+                        .append(item.optString("destination", ""))
+                        .append(" · ").append(item.optLong("count")).append(" 次");
+            }
+        }
+        text.append("\n\n上述为检查和日志次数，UDP 可按包重复，不是成功连接数。DNS 日志不覆盖所有缓存命中或应用自带 HTTPDNS。内容仅在本机，不包含原始日志、域名、订阅令牌或请求内容。");
         return text.toString();
     }
 

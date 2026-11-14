@@ -36,12 +36,23 @@ func (o *Observable[T]) close() {
 }
 
 func (o *Observable[T]) Subscribe() (Subscription[T], error) {
+	return o.subscribe(false)
+}
+
+// SubscribeNonBlocking is intended for optional best-effort diagnostics. Unlike
+// Subscribe, a slow consumer drops events when its bounded buffer is full.
+func (o *Observable[T]) SubscribeNonBlocking() (Subscription[T], error) {
+	return o.subscribe(true)
+}
+
+func (o *Observable[T]) subscribe(nonblocking bool) (Subscription[T], error) {
 	o.mux.Lock()
 	defer o.mux.Unlock()
 	if o.done {
 		return nil, errors.New("observable is closed")
 	}
 	subscriber := newSubscriber[T]()
+	subscriber.nonblocking = nonblocking
 	o.listener[subscriber.Out()] = subscriber
 	return subscriber.Out(), nil
 }

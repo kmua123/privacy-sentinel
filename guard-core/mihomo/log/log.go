@@ -67,6 +67,13 @@ func Subscribe() observable.Subscription[Event] {
 	return sub
 }
 
+// SubscribeNonBlocking keeps optional embedded diagnostics from stalling log
+// writers when its bounded queue fills. Ordinary subscribers are unchanged.
+func SubscribeNonBlocking() observable.Subscription[Event] {
+	sub, _ := source.SubscribeNonBlocking()
+	return sub
+}
+
 func UnSubscribe(sub observable.Subscription[Event]) {
 	source.UnSubscribe(sub)
 }

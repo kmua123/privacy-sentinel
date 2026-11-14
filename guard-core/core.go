@@ -56,6 +56,7 @@ type engine struct {
 	homePrepareFailed bool
 	proxies           map[string]C.Proxy
 	delayGates        map[string]chan struct{}
+	diagnostics       *networkDiagnosticsState
 }
 
 // Start duplicates tunFD. The host keeps ownership of its ParcelFileDescriptor;
@@ -95,7 +96,7 @@ func Start(tunFD int64, configYAML, stateDirectory string, callbacks Callbacks) 
 	config.General.GeoAutoUpdate = false
 	config.General.FindProcessMode = process.FindProcessOff
 
-	e := &engine{callbacks: callbacks, proxies: config.Proxies}
+	e := &engine{callbacks: callbacks, proxies: config.Proxies, diagnostics: newNetworkDiagnostics()}
 	e.active.Store(true)
 	beginTrafficSession()
 	dialer.DefaultSocketHook = e.protect
@@ -105,24 +106,17 @@ func Start(tunFD int64, configYAML, stateDirectory string, callbacks Callbacks) 
 	fd, err := duplicateTUN(int(tunFD))
 	if err != nil {
 		e.active.Store(false)
+		e.diagnostics.stop()
 		endTrafficSession()
 		executor.Shutdown()
 		closeProxies()
 		return errors.New("could not duplicate Android TUN descriptor")
 	}
-	options := LC.Tun{
-		FileDescriptor:        fd,
-		Stack:                 C.TunGvisor,
-		MTU:                   1400,
-		Inet4Address:          []netip.Prefix{netip.MustParsePrefix("10.99.0.1/30")},
-		Inet6Address:          []netip.Prefix{netip.MustParsePrefix("fd99:7072:6976::1/126")},
-		DNSHijack:             []string{"0.0.0.0:53", "[::]:53"},
-		DisableICMPForwarding: true,
-		UDPTimeout:            60,
-	}
+	options := guardedTunOptions(fd, config.General.IPv6)
 	listener, err := sing_tun.New(options, tunnel.Tunnel)
 	if err != nil {
 		e.active.Store(false)
+		e.diagnostics.stop()
 		endTrafficSession()
 		executor.Shutdown()
 		closeProxies()
@@ -130,6 +124,8 @@ func Start(tunFD int64, configYAML, stateDirectory string, callbacks Callbacks) 
 	}
 	e.listener = listener
 	running = e
+	e.diagnostics.startLogObserver()
+	currentNetworkDiagnostics.Store(e.diagnostics)
 	// An explicitly enabled private overlay needs its public node identity
 	// before the controller can authorize it. Prepare only its control plane;
 	// application flows still enter through the guarded TUN above.
@@ -156,6 +152,24 @@ func Start(tunFD int64, configYAML, stateDirectory string, callbacks Callbacks) 
 		}
 	}
 	return nil
+}
+
+// Match the host's advertised TUN address family. The Java VPN still captures
+// both default routes; omitting an IPv6 source address does not allow bypass.
+func guardedTunOptions(fd int, ipv6 bool) LC.Tun {
+	options := LC.Tun{
+		FileDescriptor:        fd,
+		Stack:                 C.TunGvisor,
+		MTU:                   1400,
+		Inet4Address:          []netip.Prefix{netip.MustParsePrefix("10.99.0.1/30")},
+		DNSHijack:             []string{"0.0.0.0:53", "[::]:53"},
+		DisableICMPForwarding: true,
+		UDPTimeout:            60,
+	}
+	if ipv6 {
+		options.Inet6Address = []netip.Prefix{netip.MustParsePrefix("fd99:7072:6976::1/126")}
+	}
+	return options
 }
 
 // HomeStatus returns bounded, shareable diagnostics for the configured home
@@ -210,6 +224,7 @@ func Stop() {
 	}
 	running = nil
 	e.active.Store(false)
+	e.diagnostics.stop()
 	endTrafficSession()
 	if e.listener != nil {
 		_ = e.listener.Close()
@@ -263,9 +278,11 @@ func (e *engine) protect(_ string, _ string, conn syscall.RawConn) error {
 		protected = e.callbacks.Protect(int64(fd))
 	})
 	if err != nil {
+		e.diagnostics.recordProtectFailure()
 		return err
 	}
 	if !protected {
+		e.diagnostics.recordProtectFailure()
 		return errors.New("Android refused socket protection")
 	}
 	return nil
@@ -278,8 +295,10 @@ func (e *engine) admit(ctx context.Context, protocol int32, metadata M.Metadata)
 	source := metadata.Source.String()
 	destination := metadata.Destination.String()
 	generation := e.generation.Load()
-	uid := e.callbacks.ResolveUid(protocol, source, destination)
-	if !e.callbacks.Permit(uid, protocol, source, destination) || !e.active.Load() || e.generation.Load() != generation {
+	uid := e.resolveUID(protocol, source, destination)
+	allowed := e.permit(uid, protocol, source, destination) && e.active.Load() && e.generation.Load() == generation
+	e.diagnostics.recordAdmission(uid, protocol, metadata.Destination, allowed)
+	if !allowed {
 		return ctx, uid, errDenied
 	}
 	ctx = sing.WithAdditions(ctx, inbound.Addition(func(value *C.Metadata) {
@@ -288,6 +307,20 @@ func (e *engine) admit(ctx context.Context, protocol int32, metadata M.Metadata)
 		}
 	}))
 	return ctx, uid, nil
+}
+
+func (e *engine) resolveUID(protocol int32, source, destination string) int64 {
+	started := time.Now()
+	uid := e.callbacks.ResolveUid(protocol, source, destination)
+	e.diagnostics.recordCallback(false, time.Since(started))
+	return uid
+}
+
+func (e *engine) permit(uid int64, protocol int32, source, destination string) bool {
+	started := time.Now()
+	allowed := e.callbacks.Permit(uid, protocol, source, destination)
+	e.diagnostics.recordCallback(true, time.Since(started))
+	return allowed
 }
 
 func (e *engine) TCP(ctx context.Context, conn net.Conn, metadata M.Metadata) (context.Context, net.Conn, error) {
@@ -352,7 +385,7 @@ func (c *guardedConn) permitted() bool {
 	// The original socket may have disappeared from Android's owner table by
 	// now. Retain its admitted UID rather than resolving it again or falling
 	// back to a different identity on an established flow.
-	return c.owner.callbacks.Permit(c.uid, 6, c.source, c.destination) &&
+	return c.owner.permit(c.uid, 6, c.source, c.destination) &&
 		!c.closed.Load() && c.owner.active.Load() && c.owner.generation.Load() == c.generation
 }
 

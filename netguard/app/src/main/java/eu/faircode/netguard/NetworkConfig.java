@@ -68,6 +68,17 @@ public final class NetworkConfig {
         public boolean zeroTierTcpOnly = false;
     }
 
+    /** YAML and TUN address-family decision from one locked settings/profile snapshot. */
+    public static final class PreparedCore {
+        public final String yaml;
+        public final boolean ipv6Enabled;
+
+        private PreparedCore(String yaml, boolean ipv6Enabled) {
+            this.yaml = yaml;
+            this.ipv6Enabled = ipv6Enabled;
+        }
+    }
+
     public NetworkConfig(Context context) {
         this.context = context.getApplicationContext();
         preferences = this.context.getSharedPreferences("unified_network", Context.MODE_PRIVATE);
@@ -167,10 +178,17 @@ public final class NetworkConfig {
 
     /** physicalIpv6 describes the selected non-VPN network, never the TUN itself. */
     public String buildCoreYaml(boolean physicalIpv6) throws IOException {
+        return prepareCore(physicalIpv6).yaml;
+    }
+
+    /** Keep the published TUN IPv6 address and resolver policy in the same configuration generation. */
+    public PreparedCore prepareCore(boolean physicalIpv6) throws IOException {
         synchronized (PROFILE_LOCK) {
             ensureMigration();
             List<SubscriptionProfiles.Entry> entries = entries();
-            return buildCoreYaml(readProfileLocked(entries), loadLocked(entries), physicalIpv6);
+            Settings settings = loadLocked(entries);
+            ClashProfile nodes = readProfileLocked(entries);
+            return prepareCore(nodes, settings, physicalIpv6);
         }
     }
 
@@ -186,13 +204,19 @@ public final class NetworkConfig {
     }
 
     private String buildCoreYaml(ClashProfile nodes, Settings settings, boolean physicalIpv6) throws IOException {
+        return prepareCore(nodes, settings, physicalIpv6).yaml;
+    }
+
+    private PreparedCore prepareCore(ClashProfile nodes, Settings settings, boolean physicalIpv6) throws IOException {
         validateIpv6Mode(settings.ipv6Mode);
-        boolean outboundIpv6 = IPV6_ENABLED.equals(settings.ipv6Mode)
-                || (IPV6_AUTO.equals(settings.ipv6Mode) && physicalIpv6);
-        return nodes.coreYaml(settings.selectedProxy, settings.mode, settings.enabledZeroTier,
+        boolean outboundIpv6 = !HOME_EXIT.equals(settings.mode)
+                && (IPV6_ENABLED.equals(settings.ipv6Mode)
+                || (IPV6_AUTO.equals(settings.ipv6Mode) && physicalIpv6));
+        String yaml = nodes.coreYaml(settings.selectedProxy, settings.mode, settings.enabledZeroTier,
                 settings.zeroTierNetwork.trim(), settings.enabledZeroTier
                         ? ClashProfile.cidrs(settings.homeCidrs) : Collections.emptyList(), settings.homeDns.trim(),
                 settings.zeroTierTcpOnly ? "force" : "auto", outboundIpv6);
+        return new PreparedCore(yaml, outboundIpv6);
     }
 
     private static void validateIpv6Mode(String mode) throws IOException {

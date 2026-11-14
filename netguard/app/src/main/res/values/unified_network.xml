@@ -17,6 +17,7 @@
     <string name="unified_ipv6_off">只用 IPv4：图片加载异常时可尝试</string>
     <string name="unified_ipv6_on">允许 IPv6：确认网络或节点支持时使用</string>
     <string name="unified_ipv6_description">自动模式仅在当前底层网络有 IPv6 地址和默认路由时启用。只用 IPv4 会过滤普通 DNS 的 AAAA 结果；应用自带解析可能仍需重新加载。此设置不改变手机系统网络配置，回家出口仍只提供 IPv4。</string>
+    <string name="unified_connection_diagnostics">连接故障诊断（本机）</string>
     <string name="unified_home_title">ZeroTier 回家</string>
     <string name="unified_zerotier_enabled">启用自建 ZeroTier 网络</string>
     <string name="unified_network_id">网络 ID</string>

@@ -7,11 +7,19 @@ import (
 type Subscription[T any] <-chan T
 
 type Subscriber[T any] struct {
-	buffer chan T
-	once   sync.Once
+	buffer      chan T
+	once        sync.Once
+	nonblocking bool
 }
 
 func (s *Subscriber[T]) Emit(item T) {
+	if s.nonblocking {
+		select {
+		case s.buffer <- item:
+		default:
+		}
+		return
+	}
 	s.buffer <- item
 }
 
