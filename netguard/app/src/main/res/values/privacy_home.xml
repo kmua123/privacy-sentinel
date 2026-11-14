@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="guard_subtitle">查看应用连接与相机、麦克风使用事件</string>
+    <string name="guard_network_title">联网守卫</string>
+    <string name="guard_network_description">一个 VPN 处理应用审批、Clash 代理和 ZeroTier 回家。普通应用首次联网先询问，系统共享 UID 先记录，可手动管理整组。</string>
+    <string name="guard_network_rules">应用监看与连接记录</string>
+    <string name="guard_sensor_description">通过内置无线调试激活接收系统使用事件。无需另装 Shizuku，手机重启后需要重新激活。支持情况以手机实际事件为准。</string>
+    <string name="guard_sensor_open">打开传感器提醒</string>
+    <string name="guard_data_notice">连接记录和传感器事件保存在本机。连接元数据无法说明加密连接中发送了什么。</string>
+    <string name="guard_vpn_start">启动联网守卫</string>
+    <string name="guard_vpn_stop">停止联网守卫</string>
+    <string name="guard_vpn_stopped">联网守卫已停止</string>
+    <string name="guard_vpn_starting">正在等待 VPN 建立</string>
+    <string name="guard_vpn_start_failed">VPN 未能建立，请检查系统 VPN 设置后重试</string>
+    <string name="guard_vpn_running">VPN 已运行 · 覆盖 %1$d 个应用</string>
+    <string name="guard_select_first">请先在联网规则里选择至少一个可单独识别的应用。</string>
+    <string name="guard_notification_required">请允许通知，以便收到被拦截连接的审批提示。</string>
+    <string name="guard_notification_settings">打开通知设置</string>
+    <string name="guard_vpn_consent">接管当前用户可接管的应用。普通应用默认首次联网审批；系统共享 UID 默认记录；身份未知的连接默认拒绝。请在网络设置中选择直连、代理或回家模式。启动会接替当前 VPN。系统的“始终开启 VPN”和“阻止未使用 VPN 的连接”可在守卫退出时保持断网保护。</string>
+    <string name="guard_vpn_conflict">检测到手机已在使用 VPN。请先在系统设置中检查当前连接，再决定是否切换。</string>
+    <string name="guard_vpn_settings">打开 VPN 设置</string>
+    <string name="guard_vpn_cancelled">联网守卫尚未启动</string>
+    <string name="guard_vpn_failed">系统未能打开 VPN 授权，请检查 VPN 设置</string>
+</resources>

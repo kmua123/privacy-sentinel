@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sensor_title">相机与麦克风</string>
+    <string name="sensor_alert_channel">相机和麦克风使用提醒</string>
+    <string name="sensor_camera">相机</string>
+    <string name="sensor_mic">麦克风</string>
+    <string name="sensor_explanation">通过内置调试服务监听 Android 的 AppOps 事件。应用开始使用相机或麦克风后，按系统记录的应用发出提醒。事件信息保存在本机。</string>
+    <string name="sensor_stopped">监听已关闭</string>
+    <string name="sensor_connecting">正在连接内置调试服务…</string>
+    <string name="sensor_waiting_event">已连接，等待首条 AppOps 事件</string>
+    <string name="sensor_running">正在接收 Android AppOps 事件</string>
+    <string name="sensor_start">开始监听</string>
+    <string name="sensor_stop">停止监听</string>
+    <string name="sensor_unsupported">监听需要 Android 11 或更高版本。</string>
+    <string name="sensor_shizuku_needed">请先完成 App 内的无线调试激活。</string>
+    <string name="sensor_no_watch_permission">内置调试服务权限不足，无法监听其他应用。</string>
+    <string name="sensor_shizuku_permission_denied">请完成内置无线调试激活后重试。</string>
+    <string name="sensor_shizuku_stopped">内置调试服务已停止，请重新激活。</string>
+    <string name="sensor_interrupted">相机与麦克风监听已中断</string>
+    <string name="sensor_connection_error">无法连接系统传感器监听服务。</string>
+    <string name="sensor_notifications_needed">请允许通知，以接收相机和麦克风使用提醒。</string>
+    <string name="sensor_open_shizuku">内置无线调试激活</string>
+    <string name="sensor_open_system_privacy">系统隐私设置</string>
+    <string name="sensor_open_notifications">提醒设置</string>
+    <string name="sensor_settings_unavailable">无法打开对应的系统设置。</string>
+    <string name="sensor_app_settings">应用设置</string>
+    <string name="sensor_alert_title">%1$s 开始使用%2$s</string>
+    <string name="sensor_alert_detail">Android AppOps · %1$s</string>
+    <string name="sensor_history_title">最近的 AppOps 事件</string>
+    <string name="sensor_history_empty">暂无相机或麦克风使用记录。</string>
+    <string name="sensor_history_clear">清除事件记录</string>
+    <string name="sensor_history_clear_question">清除此手机上的相机和麦克风使用记录？</string>
+    <string name="sensor_history_item">%1$s %2$s · %3$s · %4$s\n%5$s</string>
+</resources>

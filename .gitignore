@@ -1,0 +1,27 @@
+# Generated artifacts and private device data
+**/.gradle/
+**/build/
+**/.cxx/
+**/.idea/
+**/.tools/
+**/aar-inspect/
+**/__pycache__/
+**/local.properties
+**/keystore.properties
+**/crowdin.properties
+*.aar
+*.apk
+*.aab
+*.idsig
+*.p12
+*.jks
+*.keystore
+*.log
+.env
+.env.*
+identity.secret
+identity.public
+subscription-cache/
+*.iml
+.DS_Store
+/dist/

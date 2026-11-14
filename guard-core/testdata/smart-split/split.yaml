@@ -1,0 +1,61 @@
+mode: rule
+allow-lan: false
+ipv6: true
+log-level: warning
+find-process-mode: always
+tun:
+  enable: false
+rule-providers:
+  cn-domain:
+    type: file
+    behavior: domain
+    format: mrs
+    path: rules/cn-domain.mrs
+  cn-ip:
+    type: file
+    behavior: ipcidr
+    format: mrs
+    path: rules/cn-ip.mrs
+proxy-groups:
+- name: 隐私哨兵-代理
+  type: select
+  proxies:
+  - 测试#&节点
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: redir-host
+  use-hosts: false
+  use-system-hosts: false
+  respect-rules: true
+  default-nameserver:
+  - 223.5.5.5
+  - 1.1.1.1
+  proxy-server-nameserver:
+  - https://dns.alidns.com/dns-query#DIRECT
+  nameserver-policy:
+    rule-set:cn-domain:
+    - https://dns.alidns.com/dns-query#DIRECT
+  nameserver:
+  - https://cloudflare-dns.com/dns-query#隐私哨兵-代理
+proxies:
+- name: 测试#&节点
+  type: socks5
+  server: 127.0.0.1
+  port: 10808
+  udp: true
+- name: 隐私哨兵-回家
+  type: zerotier
+  network: 0123456789abcdef
+  state-dir: zerotier/home
+  udp: true
+  ip-stack:
+    mode: gvisor
+  tcp-fallback-mode: auto
+rules:
+- IP-CIDR,10.147.17.0/24,隐私哨兵-回家,no-resolve
+- IP-CIDR,10.0.0.0/24,隐私哨兵-回家,no-resolve
+- RULE-SET,cn-domain,DIRECT
+- RULE-SET,cn-ip,DIRECT,no-resolve
+- MATCH,测试#&节点
+- MATCH,REJECT

@@ -1,0 +1,41 @@
+mode: rule
+allow-lan: false
+ipv6: false
+log-level: warning
+find-process-mode: always
+tun:
+  enable: false
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: redir-host
+  use-hosts: false
+  use-system-hosts: false
+  respect-rules: true
+  default-nameserver:
+  - 223.5.5.5
+  - 1.1.1.1
+  proxy-server-nameserver:
+  - https://dns.alidns.com/dns-query#DIRECT
+  nameserver:
+  - udp://10.147.17.1:53#隐私哨兵-回家
+  - tcp://10.147.17.1:53#隐私哨兵-回家
+proxies:
+- name: 测试#&节点
+  type: socks5
+  server: 127.0.0.1
+  port: 10808
+  udp: true
+- name: 隐私哨兵-回家
+  type: zerotier
+  network: 0123456789abcdef
+  state-dir: zerotier/home
+  udp: true
+  ip-stack:
+    mode: gvisor
+  tcp-fallback-mode: auto
+rules:
+- IP-CIDR,10.147.17.0/24,隐私哨兵-回家,no-resolve
+- IP-CIDR,10.0.0.0/24,隐私哨兵-回家,no-resolve
+- MATCH,隐私哨兵-回家
+- MATCH,REJECT

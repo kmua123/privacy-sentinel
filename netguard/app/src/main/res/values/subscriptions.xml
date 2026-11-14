@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subscriptions_title">订阅管理与切换</string>
+    <string name="subscriptions_description">保存多个 Clash 订阅，切换时使用各自的节点和上次选择。首次使用需要下载；更新成功后才替换当前配置。订阅地址可能含有密钥，请勿分享。</string>
+    <string name="subscriptions_name">订阅名称（可选）</string>
+    <string name="subscriptions_save">保存订阅</string>
+    <string name="subscriptions_save_use">保存并使用</string>
+    <string name="subscriptions_saved">订阅已保存，当前使用的订阅未变。</string>
+    <string name="subscriptions_activated">已切换订阅，运行中的守卫会重新应用网络配置。</string>
+    <string name="subscriptions_updated">订阅已更新并使用。</string>
+    <string name="subscriptions_empty">还没有保存订阅。</string>
+    <string name="subscriptions_current">当前使用</string>
+    <string name="subscriptions_inactive">未使用</string>
+    <string name="subscriptions_cached">已有本机节点缓存</string>
+    <string name="subscriptions_uncached">首次使用需要下载</string>
+    <string name="subscriptions_local_note">重新从文件导入可更新此项的本机节点。</string>
+    <string name="subscriptions_use">使用此订阅</string>
+    <string name="subscriptions_refresh_use">更新并使用</string>
+    <string name="subscriptions_remove">删除订阅</string>
+    <string name="subscriptions_remove_confirm">删除“%1$s”的本机订阅和节点缓存？</string>
+    <string name="subscriptions_failed">操作未完成，请检查 HTTPS 订阅地址、网络和配置格式，再重试。</string>
+</resources>

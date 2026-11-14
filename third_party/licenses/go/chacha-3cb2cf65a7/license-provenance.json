@@ -1,0 +1,13 @@
+{
+  "version": "v0.1.5",
+  "tag_commit": "07294f500ca8384015f6cc21311de7b6f093607d",
+  "license_commit": "7b981d42c3baca5a004e7b0ecfb9b67ee20e583a",
+  "compare_url": "https://api.github.com/repos/MetaCubeX/chacha/compare/07294f500ca8384015f6cc21311de7b6f093607d...7b981d42c3baca5a004e7b0ecfb9b67ee20e583a",
+  "ahead_by": 1,
+  "files": [
+    {
+      "filename": "LICENSE",
+      "status": "added"
+    }
+  ]
+}

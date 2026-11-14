@@ -1,0 +1,8 @@
+* text=auto
+*.so -text
+*.mrs -text
+*.jar -text
+third_party/licenses/** -text
+netguard/app/src/main/assets/third_party/** -text
+**/gradlew text eol=lf
+*.sh text eol=lf

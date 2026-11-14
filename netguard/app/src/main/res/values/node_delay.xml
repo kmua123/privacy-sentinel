@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="node_delay_title">节点延迟测试</string>
+    <string name="node_delay_description">通过每个节点请求 HTTPS 测试页，显示连接、TLS 和响应的总延迟。此结果用于判断节点可用性，不代表下载速度。点按节点测速，长按设为公网代理节点。</string>
+    <string name="node_delay_all">全部测速</string>
+    <string name="node_delay_stop">停止测速</string>
+    <string name="node_delay_loading">正在读取当前订阅节点…</string>
+    <string name="node_delay_load_failed">无法读取节点，请返回检查订阅配置</string>
+    <string name="node_delay_empty">当前订阅没有节点，请先导入或切换订阅</string>
+    <string name="node_delay_idle">共 %1$d 个节点；最多同时测试 3 个，每个最长 8 秒</string>
+    <string name="node_delay_progress">已完成 %1$d / %2$d</string>
+    <string name="node_delay_need_guard">请先启动联网守卫，等待启动完成后再测速</string>
+    <string name="node_delay_untested">未测速</string>
+    <string name="node_delay_queued">排队中</string>
+    <string name="node_delay_testing">测速中…</string>
+    <string name="node_delay_cancelled">已停止</string>
+    <string name="node_delay_ms">%1$d ms</string>
+    <string name="node_delay_timeout">超时</string>
+    <string name="node_delay_unavailable">连接失败</string>
+    <string name="node_delay_wrong_status">测试页响应异常</string>
+    <string name="node_delay_node_changed">节点已变更，请重新测试</string>
+    <string name="node_delay_network_changed">网络或内核已切换，请重新测试</string>
+    <string name="node_delay_select_title">设为公网代理节点？</string>
+    <string name="node_delay_select_message">%1$s\n\n保存后正在运行的守卫会重新应用配置。联网模式和隐私审批规则继续使用当前设置。</string>
+    <string name="node_delay_select">使用此节点</string>
+    <string name="node_delay_selecting">正在应用节点…</string>
+    <string name="node_delay_selected">已选择：%1$s</string>
+    <string name="node_delay_select_failed">未能应用节点，请返回检查网络配置</string>
+    <string name="node_delay_current">当前公网节点</string>
+</resources>

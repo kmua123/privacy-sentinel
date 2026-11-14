@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:installLocation="internalOnly">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- http://developer.android.com/guide/topics/security/permissions.html#normal-dangerous -->
+
+    <!-- https://developer.android.com/preview/privacy/package-visibility -->
+    <!-- Complete on-device application/UID inventory is the user-requested firewall feature. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <!--queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries-->
+
+    <permission
+        android:name="${applicationId}.permission.ADMIN"
+        android:description="@string/app_description"
+        android:label="@string/app_name"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="${applicationId}.permission.ADMIN" />
+
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.app_widgets"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <application
+        android:name="ApplicationEx"
+        android:allowBackup="false"
+        android:appCategory="productivity"
+        android:description="@string/app_description"
+        android:icon="@drawable/ic_privacy_guard"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@drawable/ic_privacy_guard"
+        android:supportsRtl="true"
+        android:theme="@style/AppThemeTeal"
+        tools:ignore="ManifestResource">
+
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.1" />
+
+        <activity
+            android:name=".PrivacyHomeActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ActivityMain" android:exported="false" />
+
+        <activity android:name=".ActivityNetworkApproval" android:exported="false" />
+        <activity android:name=".ActivityUnifiedNetwork" android:exported="false" />
+        <activity android:name=".ActivitySubscriptions" android:exported="false" />
+        <activity android:name=".ActivityNodeDelay" android:exported="false" />
+        <activity android:name=".ActivityPublicInfo" android:exported="false" />
+        <activity android:name=".InternalAdbActivity" android:exported="false" />
+        <service android:name=".InternalAdbPairingService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-initiated two-minute local wireless ADB pairing, accepting the system pairing code from a visible notification while the system dialog stays open." />
+        </service>
+
+        <service android:name=".UnifiedVpnService" android:exported="true"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-controlled on-device app connection approval and routing through direct, proxy and private home-network paths." />
+            <intent-filter><action android:name="android.net.VpnService" /></intent-filter>
+        </service>
+        <receiver android:name=".UnifiedPolicyReceiver" android:exported="false">
+            <intent-filter><action android:name="eu.faircode.netguard.NETWORK_TEMPORARY_EXPIRY" /></intent-filter>
+        </receiver>
+
+        <activity android:name=".ActivityTrafficWatch" android:exported="false" android:label="@string/watch_title" />
+
+        <service android:name=".TrafficWatchService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-enabled recurring on-device traffic observations via a locally authorized shell helper with visible status and review alerts." />
+        </service>
+
+        <activity
+            android:name=".ActivitySettings"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:label="@string/menu_settings"
+            android:parentActivityName=".ActivityMain">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ActivityMain" />
+        </activity>
+
+        <activity
+            android:name=".ActivitySensorPrivacy"
+            android:exported="false"
+            android:label="@string/sensor_title"
+            android:parentActivityName=".ActivityMain" />
+
+        <service
+            android:name=".SensorWatchService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-started camera and microphone access alerts from Android AppOps callbacks" />
+        </service>
+
+        <activity
+            android:name=".ActivityLog"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/menu_log"
+            android:parentActivityName=".ActivityMain">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ActivityMain" />
+        </activity>
+
+        <activity
+            android:name=".ActivityPro"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_pro"
+            android:parentActivityName=".ActivityMain">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ActivityMain" />
+        </activity>
+
+        <activity
+            android:name=".ActivityDns"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/setting_show_resolved"
+            android:parentActivityName=".ActivitySettings">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ActivitySettings" />
+        </activity>
+
+        <activity
+            android:name=".ActivityForwarding"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/setting_forwarding"
+            android:parentActivityName=".ActivitySettings">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ActivitySettings" />
+        </activity>
+
+        <activity
+            android:name=".ActivityForwardApproval"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/AppDialog">
+            <intent-filter>
+                <action android:name="eu.faircode.netguard.START_PORT_FORWARD" />
+                <action android:name="eu.faircode.netguard.STOP_PORT_FORWARD" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".ServiceSinkhole"
+            android:enabled="false"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="NetGuard is a firewall app using the Android VPN service to filter traffic on the device. A foreground service is required to process internet traffic in real-time to be able to allow and block traffic as configured by the user of the app. There is no other way to do this, and other foreground service types are either too limited or not appropriate."  />
+        </service>
+
+        <service
+            android:name=".ServiceExternal"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:label="@string/app_name">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="NetGuard is a firewall app using the Android VPN service to filter traffic on the device. A foreground service is required to process internet traffic in real-time to be able to allow and block traffic as configured by the user of the app. There is no other way to do this, and other foreground service types are either too limited or not appropriate."  />
+            <intent-filter>
+                <action android:name="eu.faircode.netguard.DOWNLOAD_HOSTS_FILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".ServiceTileMain"
+            android:exported="true"
+            android:icon="@drawable/ic_security_white_24dp"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".ServiceTileGraph"
+            android:exported="true"
+            android:icon="@drawable/ic_equalizer_white_24dp"
+            android:label="@string/setting_stats_category"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".ServiceTileFilter"
+            android:exported="true"
+            android:icon="@drawable/ic_filter_list_white_24dp"
+            android:label="@string/setting_filter"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".ServiceTileLockdown"
+            android:exported="true"
+            android:icon="@drawable/ic_lock_outline_white_24dp"
+            android:label="@string/setting_lockdown"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".ReceiverAutostart"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".ReceiverPackageRemoved"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".WidgetMain"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widgetmain" />
+        </receiver>
+
+        <receiver
+            android:name=".WidgetLockdown"
+            android:exported="true"
+            android:label="@string/setting_lockdown">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widgetlockdown" />
+        </receiver>
+
+        <receiver
+            android:name=".WidgetAdmin"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="${applicationId}.permission.ADMIN">
+            <intent-filter>
+                <action android:name="eu.faircode.netguard.ON" />
+                <action android:name="eu.faircode.netguard.OFF" />
+                <action android:name="eu.faircode.netguard.LOCKDOWN_ON" />
+                <action android:name="eu.faircode.netguard.LOCKDOWN_OFF" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

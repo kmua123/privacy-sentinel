@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sensor_title">Camera and microphone</string>
+    <string name="sensor_alert_channel">Camera and microphone access alerts</string>
+    <string name="sensor_camera">camera</string>
+    <string name="sensor_mic">microphone</string>
+    <string name="sensor_explanation">Listens to Android AppOps through the embedded debug helper. Alerts identify the app after access starts. Event metadata stays on this phone.</string>
+    <string name="sensor_stopped">Monitoring off</string>
+    <string name="sensor_connecting">Connecting to the embedded helper…</string>
+    <string name="sensor_waiting_event">Connected, waiting for the first AppOps event</string>
+    <string name="sensor_running">Receiving Android AppOps events</string>
+    <string name="sensor_start">Start monitoring</string>
+    <string name="sensor_stop">Stop monitoring</string>
+    <string name="sensor_unsupported">Monitoring requires Android 11 or later.</string>
+    <string name="sensor_shizuku_needed">Activate embedded wireless debugging to monitor sensor access.</string>
+    <string name="sensor_no_watch_permission">The debug helper lacks permission to watch other apps.</string>
+    <string name="sensor_shizuku_permission_denied">Activate the embedded helper and try again.</string>
+    <string name="sensor_shizuku_stopped">The debug helper stopped. Activate it again to resume monitoring.</string>
+    <string name="sensor_interrupted">Sensor monitoring stopped</string>
+    <string name="sensor_connection_error">Could not connect to the system sensor watcher.</string>
+    <string name="sensor_notifications_needed">Allow notifications to receive camera and microphone alerts.</string>
+    <string name="sensor_open_shizuku">Embedded activation</string>
+    <string name="sensor_open_system_privacy">Android privacy settings</string>
+    <string name="sensor_open_notifications">Alert settings</string>
+    <string name="sensor_settings_unavailable">Android could not open these settings.</string>
+    <string name="sensor_app_settings">App settings</string>
+    <string name="sensor_alert_title">%1$s started using the %2$s</string>
+    <string name="sensor_alert_detail">Android AppOps · %1$s</string>
+    <string name="sensor_history_title">Recent AppOps events</string>
+    <string name="sensor_history_empty">No sensor access events recorded.</string>
+    <string name="sensor_history_clear">Clear event history</string>
+    <string name="sensor_history_clear_question">Clear the camera and microphone event history on this phone?</string>
+    <string name="sensor_history_item">%1$s %2$s · %3$s · %4$s\n%5$s</string>
+</resources>

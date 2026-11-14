@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="public_info_title">隐私说明与开源许可</string>
+    <string name="public_info_privacy">隐私说明</string>
+    <string name="public_info_licenses">查看开源许可</string>
+    <string name="public_info_failed">无法读取说明文件，请查看项目仓库中的同名文档。</string>
+</resources>

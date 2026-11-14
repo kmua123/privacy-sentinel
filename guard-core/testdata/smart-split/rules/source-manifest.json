@@ -1,0 +1,29 @@
+{
+  "repository": "https://github.com/MetaCubeX/meta-rules-dat",
+  "data_branch": "meta",
+  "data_commit": "2963a49408bbc37f2c2ffa6e8329fe11076a816b",
+  "license": "GPL-3.0",
+  "license_source_commit": "4178770badecb1b349fbcd62c737e0d7a2079729",
+  "license_source_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/4178770badecb1b349fbcd62c737e0d7a2079729/LICENSE",
+  "upstream_readme_source_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/4178770badecb1b349fbcd62c737e0d7a2079729/README.md",
+  "fetched_at_utc": "2026-11-13T07:02:44.9556864Z",
+  "runtime_updates": false,
+  "files": [
+    {
+      "name": "cn-domain.mrs",
+      "behavior": "domain",
+      "source_path": "geo/geosite/cn.mrs",
+      "source_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/2963a49408bbc37f2c2ffa6e8329fe11076a816b/geo/geosite/cn.mrs",
+      "bytes": 532882,
+      "sha256": "0b8c7c4d9773471991dd65737fdb16f3bf1baf2512c8b764d4c235318f01b7c6"
+    },
+    {
+      "name": "cn-ip.mrs",
+      "behavior": "ipcidr",
+      "source_path": "geo/geoip/cn.mrs",
+      "source_url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/2963a49408bbc37f2c2ffa6e8329fe11076a816b/geo/geoip/cn.mrs",
+      "bytes": 37429,
+      "sha256": "81c8ab36f71f8a8f1440acdd6316730f8735e3aab26da7bde8de9faaf309463c"
+    }
+  ]
+}

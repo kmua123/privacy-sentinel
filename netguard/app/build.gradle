@@ -1,0 +1,69 @@
+apply plugin: 'com.android.application'
+
+def buildNative = providers.gradleProperty('buildNativeFromSource').map { it.toBoolean() }.orElse(false).get()
+
+android {
+    namespace 'eu.faircode.netguard'
+    compileSdk = 37
+
+    defaultConfig {
+        applicationId = 'local.privacy.guard'
+        versionName = '0.2.3-preview'
+        minSdk = 29
+        targetSdk = 36
+        versionCode = 8
+        ndk { abiFilters 'arm64-v8a', 'x86_64' }
+        buildConfigField 'boolean', 'PLAY_STORE_RELEASE', 'false'
+        buildConfigField 'String', 'HOSTS_FILE_URI', '""'
+        buildConfigField 'String', 'GITHUB_LATEST_API', '""'
+    }
+
+    if (buildNative) {
+        ndkVersion '25.2.9519653'
+        sourceSets.main.jniLibs.srcDirs = []
+        externalNativeBuild {
+            cmake {
+                path 'CMakeLists.txt'
+            }
+        }
+    }
+
+    packaging {
+        jniLibs.useLegacyPackaging = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        disable 'MissingTranslation'
+    }
+    buildFeatures {
+        aidl = true
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation files('libs/guardcore.aar')
+    implementation 'org.yaml:snakeyaml:2.7'
+    implementation 'com.github.MuntashirAkon:libadb-android:3.1.1'
+    implementation 'org.conscrypt:conscrypt-android:2.5.3'
+
+    // https://developer.android.com/jetpack/androidx/releases/
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.1'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+    annotationProcessor 'androidx.annotation:annotation:1.7.0'
+
+    // https://bumptech.github.io/glide/
+    implementation('com.github.bumptech.glide:glide:4.14.2') {
+        exclude group: "com.android.support"
+    }
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
+}
